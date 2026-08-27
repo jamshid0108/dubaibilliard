@@ -10,21 +10,22 @@ STATE_FILE = "tables_state.json"
 
 st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="wide")
 
-# --- CSS: DIZAYN VA SHRIFTLARNI TO'G'RILASH ---
+# --- CSS: DIZAYN VA SHAFFAFLIKNI TO'G'RILASH ---
 st.markdown("""
     <style>
-    /* 1. Asosiy orqa fon xiraligini kamaytirish (rasm tiniqroq ko'rinadi) */
+    /* 1. Asosiy orqa fon */
     .stApp {
-        background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), 
+        background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), 
                           url("https://images.unsplash.com/photo-1511193311914-0346f16efe90?q=80&w=1920");
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
     }
     
-    /* 2. Yon panel (Sidebar) fonini shaffofroq qilish */
+    /* 2. Yon panel (Sidebar) - endi umuman shaffof emas, to'q qora va tiniq! */
     [data-testid="stSidebar"] {
-        background-color: rgba(30, 30, 30, 0.6) !important;
+        background-color: #111111 !important;
+        border-right: 2px solid #333333;
     }
     
     /* Matnlarni tiniq ko'rsatish */
@@ -32,18 +33,37 @@ st.markdown("""
         color: #ffffff !important;
     }
     
-    /* 3. Sidebar ichidagi "Bo'limni tanlang" shriftlarini yiriklashtirish */
+    /* Sidebar ichidagi menyu yozuvlari */
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] label {
-        font-size: 22px !important;
+        font-size: 20px !important;
         font-weight: bold !important;
     }
     
-    /* Umumiy tugmalar kattaligi */
+    /* 3. Tizimdan chiqish tugmasi shriftini ozgina kichraytirish */
+    [data-testid="stSidebar"] .stButton button {
+        font-size: 15px !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Asosiy tugmalar */
     .stButton button { font-size: 18px !important; border-radius: 8px !important; }
     
-    /* 4. Asosiy oyna kartochkalari fonini biroz oqartirish */
+    /* 4. Oxirgi to'lov cheki yashil va tiniq ko'rinishi uchun */
+    div.stSuccess {
+        background-color: rgba(10, 100, 40, 0.95) !important;
+        border: 2px solid #00ff66 !important;
+        color: #ffffff !important;
+        border-radius: 10px;
+        padding: 15px;
+    }
+    div.stSuccess p, div.stSuccess span {
+        color: #ffffff !important;
+        font-size: 18px !important;
+    }
+    
+    /* Stol kartochkalari foni */
     [data-testid="stVerticalBlock"] > div {
-        background-color: rgba(70, 70, 70, 0.3) !important;
+        background-color: rgba(40, 40, 40, 0.6) !important;
         border-radius: 12px;
         padding: 10px;
     }
@@ -124,8 +144,8 @@ else:
     st.sidebar.title("🎱 Dubai Billiard")
     page = st.sidebar.radio("Bo'limni tanlang:", ["Stollar nazorati (Obshiy zal)", "Bar va Saqlash", "Kassa va Hisobot"])
     
-    # 5. Chiqish tugmasini pastga surish uchun bo'sh joy qoldirish
-    st.sidebar.markdown("<div style='height: 40vh;'></div>", unsafe_allow_html=True)
+    # Chiqish tugmasini pastga surish uchun bo'sh joy
+    st.sidebar.markdown("<div style='height: 38vh;'></div>", unsafe_allow_html=True)
     
     if st.sidebar.button("🚪 Tizimdan chiqish", type="secondary", use_container_width=True):
         st.session_state.logged_in = False
