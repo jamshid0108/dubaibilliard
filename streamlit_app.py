@@ -10,7 +10,7 @@ STATE_FILE = "tables_state.json"
 
 st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="wide")
 
-# --- CSS: DIZAYN VA TUGMALARNI YONMA-YON QILISH ---
+# --- CSS: DIZAYN VA UCHTA TUGMA UCHUN MOSLAShtirish ---
 st.markdown("""
     <style>
     /* 1. Asosiy orqa fon */
@@ -54,7 +54,7 @@ st.markdown("""
     }
     
     /* Asosiy tugmalar */
-    .stButton button { font-size: 18px !important; border-radius: 8px !important; }
+    .stButton button { font-size: 17px !important; border-radius: 8px !important; }
     
     /* 4. OXIRGI TO'LOV CHEKI - ANIQ VA YORQIN YASHIL FON */
     div.stSuccess {
@@ -155,7 +155,6 @@ else:
     st.sidebar.title("🎱 Dubai Billiard")
     page = st.sidebar.radio("Bo'limni tanlang:", ["Stollar nazorati (Obshiy zal)", "Bar va Saqlash", "Kassa va Hisobot"])
     
-    # Chiqish tugmasini pastki chap burchakka tushirish uchun bo'sh joy
     st.sidebar.markdown("<div style='height: 38vh;'></div>", unsafe_allow_html=True)
     
     if st.sidebar.button("🚪 Tizimdan chiqish", type="secondary", use_container_width=True):
@@ -171,14 +170,25 @@ else:
             t_num = rec['table']
             st.success("🧾 **OXIRGI TO'LOV CHEKI:** " + str(t_num) + "-Stol | Jami vaqt: " + str(rec['minutes']) + " daqiqa | **TO'LANADIGAN SUMMA: " + str(rec['cost']) + " so'm**")
             
-            # Tugmalarni yonma-yon qilish uchun kichik ustunlar va o'nga surish uchun bo'sh ustun
-            _, col_btn1, col_btn2 = st.columns([3, 1, 1.2])
+            # Uchta tugma uchun 3 ta ustun
+            col_btn1, col_btn2, col_btn3 = st.columns(3)
             with col_btn1:
                 if st.button("Yopish", use_container_width=True):
+                    # Kassanikiga yozib, keyin chekni yopamiz
+                    history = load_history()
+                    history.append({
+                        "sana": get_local_time().strftime("%Y-%m-%d"),
+                        "stol": t_num,
+                        "vaqt": rec['start_str'] + " - " + rec['end_str'],
+                        "daqiqa": rec['minutes'],
+                        "summa": rec['cost']
+                    })
+                    save_history(history)
+                    
                     st.session_state.last_receipt = None
                     st.rerun()
             with col_btn2:
-                if st.button("▶️ Davom ettirish", use_container_width=True):
+                if st.button("▶️ Davom", use_container_width=True):
                     table = st.session_state.tables[str(t_num)]
                     if table['last_stopped_time']:
                         now = get_local_time()
@@ -188,6 +198,11 @@ else:
                     table['active'] = True
                     table['last_stopped_time'] = None
                     save_tables_state(st.session_state.tables)
+                    st.session_state.last_receipt = None
+                    st.rerun()
+            with col_btn3:
+                if st.button("❌ Rad qilish", use_container_width=True):
+                    # Kassaga qo'shmaymiz, shunchaki o'chiramiz
                     st.session_state.last_receipt = None
                     st.rerun()
             st.write("---")
@@ -218,20 +233,12 @@ else:
                     if st.button("To'xtatish va hisoblash", key="stop_" + str(i)):
                         end_time = get_local_time()
                         
-                        history = load_history()
-                        history.append({
-                            "sana": end_time.strftime("%Y-%m-%d"),
-                            "stol": i,
-                            "vaqt": table['start_time'].strftime('%H:%M') + " - " + end_time.strftime('%H:%M'),
-                            "daqiqa": minutes,
-                            "summa": cost
-                        })
-                        save_history(history)
-                        
                         st.session_state.last_receipt = {
                             "table": i,
                             "minutes": minutes,
-                            "cost": cost
+                            "cost": cost,
+                            "start_str": table['start_time'].strftime('%H:%M'),
+                            "end_str": end_time.strftime('%H:%M')
                         }
                         
                         table['active'] = False
