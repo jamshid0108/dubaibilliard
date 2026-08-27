@@ -6,7 +6,6 @@ RATE_DISCOUNT = 40000
 
 st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="wide")
 
-# Toshkent vaqtini olish (UTC + 5 soat)
 def get_local_time():
     return datetime.datetime.utcnow() + datetime.timedelta(hours=5)
 
@@ -21,11 +20,17 @@ if "tables" not in st.session_state:
         4: {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
     }
 
-# Oxirgi to'xtatilgan stol cheki uchun
+# Kunlik kassa tarixi va umumiy tushum
+if "daily_total" not in st.session_state:
+    st.session_state.daily_total = 0
+
+if "history" not in st.session_state:
+    st.session_state.history = []
+
 if "last_receipt" not in st.session_state:
     st.session_state.last_receipt = None
 
-# --- LOGIN OYNASI ---
+# --- LOGIN ---
 if not st.session_state.logged_in:
     st.title("🎱 Dubai Billiard Club")
     st.subheader("Boshqaruv paneliga kirish")
@@ -47,10 +52,10 @@ else:
         st.session_state.logged_in = False
         st.rerun()
 
+    # 1-BO'LIM: STOLLAR NAZORATI
     if page == "Stollar nazorati (Obshiy zal)":
         st.title("📊 Obshiy zal — 4 ta stol nazorati")
         
-        # Agar oxirgi to'xtatilgan stol bo'lsa, chekni ko'rsatish
         if st.session_state.last_receipt:
             rec = st.session_state.last_receipt
             st.success("🧾 **OXIRGI TO'LOV CHEKI:** " + str(rec['table']) + "-Stol | Jami vaqt: " + str(rec['minutes']) + " daqiqa | **TO'LANADIGAN SUMMA: " + str(rec['cost']) + " so'm**")
@@ -83,11 +88,23 @@ else:
                     st.write("**Joriy summa:** " + str(cost) + " so'm")
                     
                     if st.button("To'xtatish va hisoblash", key="stop_" + str(i)):
+                        end_time_str = get_local_time().strftime('%H:%M')
+                        
+                        # Kassaga qo'shish
+                        st.session_state.daily_total += cost
+                        st.session_state.history.append({
+                            "stol": i,
+                            "vaqt": table['start_time'].strftime('%H:%M') + " - " + end_time_str,
+                            "daqiqa": minutes,
+                            "summa": cost
+                        })
+                        
                         st.session_state.last_receipt = {
                             "table": i,
                             "minutes": minutes,
                             "cost": cost
                         }
+                        
                         table['active'] = False
                         table['start_time'] = None
                         st.rerun()
@@ -117,5 +134,16 @@ else:
     elif page == "Bar va Saqlash":
         st.title("🥤 Bar va saqlash xonasi")
 
+    # 3-BO'LIM: KASSA VA HISOBOT
     elif page == "Kassa va Hisobot":
-        st.title("💰 Kunlik kassa va daromadlar")
+        st.title("💰 Kunlik kassa va hisobotlar")
+        
+        st.metric(label="Bugungi jami tushum", value=f"{st.session_state.daily_total:,} so'm")
+        st.write("---")
+        st.subheader("📋 Bugungi o'yinlar tarixi")
+        
+        if st.session_state.history:
+            for item in reversed(st.session_state.history):
+                st.write(f"🎱 **{item['stol']}-Stol** | Vaqti: {item['vaqt']} ({item['daqiqa']} daq) | **To'lov: {item['summa']:,} so'm**")
+        else:
+            st.info("Bugun hali to'xtatilgan o'yinlar yo'q.")
