@@ -2,17 +2,22 @@ import streamlit as st
 import datetime
 import json
 import os
+import urllib.request
+import urllib.parse
 
 RATE_REGULAR = 50000 
 RATE_DISCOUNT = 40000
 DATA_FILE = "billiard_history.json"
+
+# Telegram Bot sozlamalari
+TELEGRAM_BOT_TOKEN = "8853432484:AAHbAuheVuePQ56kvhed17iG4WZBLPFMm6A"
+TELEGRAM_CHAT_ID = "1125780094"
 
 st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="wide")
 
 # Shriftlarni kattalashtirish uchun CSS uslubi
 st.markdown("""
     <style>
-    /* Yon menyu va tugmalar shriftini kattalashtirish */
     .stRadio label {
         font-size: 20px !important;
         font-weight: bold !important;
@@ -29,6 +34,15 @@ st.markdown("""
 
 def get_local_time():
     return datetime.datetime.utcnow() + datetime.timedelta(hours=5)
+
+def send_telegram_message(message):
+    try:
+        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        data = urllib.parse.urlencode({"chat_id": TELEGRAM_CHAT_ID, "text": message, "parse_mode": "Markdown"}).encode("utf-8")
+        req = urllib.request.Request(url, data=data)
+        urllib.request.urlopen(req, timeout=5)
+    except Exception as e:
+        print("Telegram xatolik:", e)
 
 def load_history():
     if os.path.exists(DATA_FILE):
@@ -75,7 +89,6 @@ else:
     st.sidebar.title("🎱 Dubai Billiard")
     page = st.sidebar.radio("Bo'limni tanlang:", ["Stollar nazorati (Obshiy zal)", "Bar va Saqlash", "Kassa va Hisobot"])
     
-    # "Tizimdan chiqish" tugmasini pastga tushirish uchun bo'sh joylar
     for _ in range(10):
         st.sidebar.write("")
         
@@ -120,16 +133,22 @@ else:
                     
                     if st.button("To'xtatish va hisoblash", key="stop_" + str(i)):
                         end_time = get_local_time()
+                        start_str = table['start_time'].strftime('%H:%M')
+                        end_str = end_time.strftime('%H:%M')
                         
                         history = load_history()
                         history.append({
                             "sana": end_time.strftime("%Y-%m-%d"),
                             "stol": i,
-                            "vaqt": table['start_time'].strftime('%H:%M') + " - " + end_time.strftime('%H:%M'),
+                            "vaqt": start_str + " - " + end_str,
                             "daqiqa": minutes,
                             "summa": cost
                         })
                         save_history(history)
+                        
+                        # Telegramga chek yuborish
+                        tg_msg = f"🧾 *Dubai Billiard Chek*\n\n🎱 *Stol:* {i}-Stol\n⏱ *Vaqt:* {start_str} - {end_str} ({minutes} daq)\n💰 *Toʻlov:* {cost:,} soʻm"
+                        send_telegram_message(tg_msg)
                         
                         st.session_state.last_receipt = {
                             "table": i,
