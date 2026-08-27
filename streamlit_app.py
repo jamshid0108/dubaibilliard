@@ -51,7 +51,8 @@ else:
             table = st.session_state.tables[i]
             
             with col:
-                st.subheader(f"{'🔴' if table['active'] else '🟢'} {i}-Stol")
+                status_icon = "🔴" if table['active'] else "🟢"
+                st.subheader(status_icon + " " + str(i) + "-Stol")
                 
                 if table['active']:
                     now = datetime.datetime.now()
@@ -61,29 +62,29 @@ else:
                     
                     rate_type_str = "⭐ Doimiy klient (40 ming)" if table['is_vip'] else "Standard (50 ming)"
                     
-                    st.error(f"Holati: Band ({minutes} daqiqa)")
-                    st.write(f"**Tarif:** {rate_type_str}")
-                    st.write(f"Boshlangan vaqt:.strftime('%H:%M')}")
-                    st.write(f"**Joriy summa:** {cost:,} so'm")
+                    st.error("Holati: Band (" + str(minutes) + " daqiqa)")
+                    st.write("**Tarif:** " + rate_type_str)
+                    st.write("**Boshlangan vaqt:** " + table['start_time'].strftime('%H:%M'))
+                    st.write("**Joriy summa:** " + str(cost) + " so'm")
                     
-                    if st.button("To'xtatish va hisoblash", key=f"stop_{i}"):
+                    if st.button("To'xtatish va hisoblash", key="stop_" + str(i)):
                         table['active'] = False
                         table['start_time'] = None
-                        st.success(f"{i}-Stol to'xtatildi! Jami summa: {cost:,} so'm")
+                        st.success(str(i) + "-Stol to'xtatildi! Jami summa: " + str(cost) + " so'm")
                         st.rerun()
                 else:
                     st.success("Holati: Bo'sh")
                     
                     btn_col1, btn_col2 = st.columns(2)
                     with btn_col1:
-                        if st.button("Boshlash (50 ming)", key=f"start_reg_{i}"):
+                        if st.button("Boshlash (50 ming)", key="start_reg_" + str(i)):
                             table['active'] = True
                             table['start_time'] = datetime.datetime.now()
                             table['rate'] = RATE_REGULAR
                             table['is_vip'] = False
                             st.rerun()
                     with btn_col2:
-                        if st.button("⭐ Skidka (40 ming)", key=f"start_disc_{i}"):
+                        if st.button("⭐ Skidka (40 ming)", key="start_disc_" + str(i)):
                             table['active'] = True
                             table['start_time'] = datetime.datetime.now()
                             table['rate'] = RATE_DISCOUNT
