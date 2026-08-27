@@ -1,13 +1,31 @@
 import streamlit as st
 import datetime
+import json
+import os
 
 RATE_REGULAR = 50000 
 RATE_DISCOUNT = 40000
+DATA_FILE = "billiard_history.json"
 
 st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="wide")
 
 def get_local_time():
     return datetime.datetime.utcnow() + datetime.timedelta(hours=5)
+
+# Tarixni fayldan o'qish
+def load_history():
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            return []
+    return []
+
+# Tarixni faylga saqlash
+def save_history(history_data):
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(history_data, f, ensure_ascii=False, indent=2)
 
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -19,13 +37,6 @@ if "tables" not in st.session_state:
         3: {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
         4: {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
     }
-
-# Kunlik kassa tarixi va umumiy tushum
-if "daily_total" not in st.session_state:
-    st.session_state.daily_total = 0
-
-if "history" not in st.session_state:
-    st.session_state.history = []
 
 if "last_receipt" not in st.session_state:
     st.session_state.last_receipt = None
@@ -88,16 +99,18 @@ else:
                     st.write("**Joriy summa:** " + str(cost) + " so'm")
                     
                     if st.button("To'xtatish va hisoblash", key="stop_" + str(i)):
-                        end_time_str = get_local_time().strftime('%H:%M')
+                        end_time = get_local_time()
                         
-                        # Kassaga qo'shish
-                        st.session_state.daily_total += cost
-                        st.session_state.history.append({
+                        # Tarixga doimiy fayl sifatida saqlash
+                        history = load_history()
+                        history.append({
+                            "sana": end_time.strftime("%Y-%m-%d"),
                             "stol": i,
-                            "vaqt": table['start_time'].strftime('%H:%M') + " - " + end_time_str,
+                            "vaqt": table['start_time'].strftime('%H:%M') + " - " + end_time.strftime('%H:%M'),
                             "daqiqa": minutes,
                             "summa": cost
                         })
+                        save_history(history)
                         
                         st.session_state.last_receipt = {
                             "table": i,
@@ -136,14 +149,25 @@ else:
 
     # 3-BO'LIM: KASSA VA HISOBOT
     elif page == "Kassa va Hisobot":
-        st.title("💰 Kunlik kassa va hisobotlar")
+        st.title("💰 Kassa va kunlik hisobotlar")
         
-        st.metric(label="Bugungi jami tushum", value=f"{st.session_state.daily_total:,} so'm")
-        st.write("---")
-        st.subheader("📋 Bugungi o'yinlar tarixi")
+        history = load_history()
         
-        if st.session_state.history:
-            for item in reversed(st.session_state.history):
+        if history:
+            # Barcha mavjud sanalarni olish va teskari tartibda saralash
+            available_dates = sorted(list(set(item['sana'] for item in history)), reverse=True)
+            
+            selected_date = st.selectbox("📅 Sanani tanlang:", available_dates)
+            
+            # Tanlangan sana bo'yicha filter
+            day_records = [item for item in history if item['sana'] == selected_date]
+            day_total = sum(item['summa'] for item in day_records)
+            
+            st.metric(label=f"💰 {selected_date} kunidagi jami tushum", value=f"{day_total:,} so'm")
+            st.write("---")
+            st.subheader(f"📋 {selected_date} sanasidagi o'yinlar ro'yxati:")
+            
+            for item in reversed(day_records):
                 st.write(f"🎱 **{item['stol']}-Stol** | Vaqti: {item['vaqt']} ({item['daqiqa']} daq) | **To'lov: {item['summa']:,} so'm**")
         else:
-            st.info("Bugun hali to'xtatilgan o'yinlar yo'q.")
+            st.info("Hali hech qanday to'xtatilgan o'yinlar tarixi saqlanmagan.")
