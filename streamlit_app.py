@@ -1,6 +1,7 @@
 import streamlit as st
 import datetime
 
+# Login va parol
 ADMIN_USER = "admin"
 ADMIN_PASS = "dubaibilliard5300"
 
@@ -20,20 +21,22 @@ if "tables" not in st.session_state:
         4: {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
     }
 
+# Login formasi
 if not st.session_state.logged_in:
     st.title("🎱 Dubai Billiard Club")
     st.subheader("Boshqaruv paneliga kirish")
     
-    username = st.text_input("Login")
-    password = st.text_input("Parol", type="password")
+    user_input = st.text_input("Login")
+    pass_input = st.text_input("Parol", type="password")
     
     if st.button("Kirish"):
-        if username == ADMIN_USER and password == ADMIN_PASS:
+        if user_input == ADMIN_USER and pass_input == ADMIN_PASS:
             st.session_state.logged_in = True
             st.rerun()
         else:
             st.error("Login yoki parol noto'g'ri!")
 else:
+    # Asosiy panel
     st.sidebar.title("🎱 Dubai Billiard")
     page = st.sidebar.radio("Bo'limni tanlang:", ["Stollar nazorati (Obshiy zal)", "Bar va Saqlash", "Kassa va Hisobot"])
     
@@ -95,7 +98,7 @@ else:
 
     elif page == "Bar va Saqlash":
         st.title("🥤 Bar va saqlash xonasi")
-        st.write("Bar mahsulotlari boshqaruvi")
+        st.info("Bar mahsulotlari boshqaruvi")
 
     elif page == "Kassa va Hisobot":
         st.title("💰 Kunlik kassa va daromadlar")
