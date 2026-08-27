@@ -4,16 +4,14 @@ import datetime
 ADMIN_USER = "admin"
 ADMIN_PASS = "dubaibilliard5300"
 
-# Narxlar (so'mda)
-RATE_REGULAR = 50000  # Oddiy klient (50 000 so'm/soat)
-RATE_DISCOUNT = 40000 # Doimiy klient (40 000 so'm/soat)
+RATE_REGULAR = 50000 
+RATE_DISCOUNT = 40000
 
 st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="wide")
 
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
-# Stollar holati va vaqtini saqlash
 if "tables" not in st.session_state:
     st.session_state.tables = {
         1: {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
@@ -68,7 +66,7 @@ else:
                     st.write(f"Boshlangan vaqt:.strftime('%H:%M')}")
                     st.write(f"**Joriy summa:** {cost:,} so'm")
                     
-                    if st.button(f"To'xtatish va hisoblash", key=f"stop_{i}"):
+                    if st.button("To'xtatish va hisoblash", key=f"stop_{i}"):
                         table['active'] = False
                         table['start_time'] = None
                         st.success(f"{i}-Stol to'xtatildi! Jami summa: {cost:,} so'm")
@@ -78,14 +76,14 @@ else:
                     
                     btn_col1, btn_col2 = st.columns(2)
                     with btn_col1:
-                        if st.button(f"Boshlash (50 ming)", key=f"start_reg_{i}"):
+                        if st.button("Boshlash (50 ming)", key=f"start_reg_{i}"):
                             table['active'] = True
                             table['start_time'] = datetime.datetime.now()
                             table['rate'] = RATE_REGULAR
                             table['is_vip'] = False
                             st.rerun()
                     with btn_col2:
-                        if st.button(f"⭐ Skidka (40 ming)", key=f"start_disc_{i}"):
+                        if st.button("⭐ Skidka (40 ming)", key=f"start_disc_{i}"):
                             table['active'] = True
                             table['start_time'] = datetime.datetime.now()
                             table['rate'] = RATE_DISCOUNT
