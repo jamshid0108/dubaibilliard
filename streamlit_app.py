@@ -10,16 +10,21 @@ STATE_FILE = "tables_state.json"
 
 st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="wide")
 
-# --- CSS: ORQA FONGA RASM QO'SHISH VA STIL BERISH ---
+# --- CSS: DIZAYN VA SHRIFTLARNI TO'G'RILASH ---
 st.markdown("""
     <style>
-    /* Asosiy orqa fon va overlay (xiralashtirish) */
+    /* 1. Asosiy orqa fon xiraligini kamaytirish (rasm tiniqroq ko'rinadi) */
     .stApp {
-        background-image: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), 
+        background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), 
                           url("https://images.unsplash.com/photo-1511193311914-0346f16efe90?q=80&w=1920");
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
+    }
+    
+    /* 2. Yon panel (Sidebar) fonini shaffofroq qilish */
+    [data-testid="stSidebar"] {
+        background-color: rgba(30, 30, 30, 0.6) !important;
     }
     
     /* Matnlarni tiniq ko'rsatish */
@@ -27,13 +32,18 @@ st.markdown("""
         color: #ffffff !important;
     }
     
-    /* Shriftlar va tugmalar kattaligi */
-    .stRadio label { font-size: 20px !important; font-weight: bold !important; }
+    /* 3. Sidebar ichidagi "Bo'limni tanlang" shriftlarini yiriklashtirish */
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] label {
+        font-size: 22px !important;
+        font-weight: bold !important;
+    }
+    
+    /* Umumiy tugmalar kattaligi */
     .stButton button { font-size: 18px !important; border-radius: 8px !important; }
     
-    /* Kartochkalar va bloklar foni */
+    /* 4. Asosiy oyna kartochkalari fonini biroz oqartirish */
     [data-testid="stVerticalBlock"] > div {
-        background-color: rgba(20, 20, 20, 0.6);
+        background-color: rgba(70, 70, 70, 0.3) !important;
         border-radius: 12px;
         padding: 10px;
     }
@@ -43,7 +53,6 @@ st.markdown("""
 def get_local_time():
     return datetime.datetime.utcnow() + datetime.timedelta(hours=5)
 
-# --- TARIX FAYLI ---
 def load_history():
     if os.path.exists(DATA_FILE):
         try:
@@ -57,7 +66,6 @@ def save_history(history_data):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(history_data, f, ensure_ascii=False, indent=2)
 
-# --- STOLLAR HOLATINI DISKDA SAQLASH ---
 def load_tables_state():
     default_tables = {
         "1": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
@@ -89,7 +97,6 @@ def save_tables_state(tables_data):
     with open(STATE_FILE, "w", encoding="utf-8") as f:
         json.dump(serializable_tables, f, ensure_ascii=False, indent=2)
 
-# Xotiralarni yuklash
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
@@ -117,10 +124,10 @@ else:
     st.sidebar.title("🎱 Dubai Billiard")
     page = st.sidebar.radio("Bo'limni tanlang:", ["Stollar nazorati (Obshiy zal)", "Bar va Saqlash", "Kassa va Hisobot"])
     
-    for _ in range(5):
-        st.sidebar.write("")
-        
-    if st.sidebar.button("🚪 Tizimdan chiqish", type="secondary"):
+    # 5. Chiqish tugmasini pastga surish uchun bo'sh joy qoldirish
+    st.sidebar.markdown("<div style='height: 40vh;'></div>", unsafe_allow_html=True)
+    
+    if st.sidebar.button("🚪 Tizimdan chiqish", type="secondary", use_container_width=True):
         st.session_state.logged_in = False
         st.rerun()
 
@@ -210,7 +217,6 @@ else:
     elif page == "Bar va Saqlash":
         st.title("🥤 Bar va saqlash xonasi")
 
-    # 3-BO'LIM: KASSA VA HISOBOT
     elif page == "Kassa va Hisobot":
         st.title("💰 Kassa va kunlik hisobotlar")
         
