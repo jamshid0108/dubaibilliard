@@ -10,10 +10,10 @@ STATE_FILE = "tables_state.json"
 
 st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="wide")
 
-# --- CSS: DIZAYN VA SHAFFAFLIKNI MUKAMMALLASHTIRISH ---
+# --- CSS: DIZAYN VA TO'LOV CHEKINI YASHIL QILISH ---
 st.markdown("""
     <style>
-    /* 1. Asosiy orqa fon (qoraytirishni biroz kamaytirdik, rasm yaxshiroq ko'rinadi) */
+    /* 1. Asosiy orqa fon */
     .stApp {
         background-image: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), 
                           url("https://images.unsplash.com/photo-1511193311914-0346f16efe90?q=80&w=1920");
@@ -22,7 +22,7 @@ st.markdown("""
         background-attachment: fixed;
     }
     
-    /* 2. Yon panel (Sidebar) - biroz shaffof qora fon */
+    /* 2. Yon panel (Sidebar) biroz shaffof qora */
     [data-testid="stSidebar"] {
         background-color: rgba(18, 18, 18, 0.82) !important;
         border-right: 1px solid rgba(255, 255, 255, 0.1);
@@ -33,7 +33,7 @@ st.markdown("""
         color: #ffffff !important;
     }
     
-    /* 3. Sidebar sarlavhasi ("Dubai Billiard") ni kattaroq qilish */
+    /* Sidebar sarlavhasi ("Dubai Billiard") */
     [data-testid="stSidebar"] h1 {
         font-size: 30px !important;
         font-weight: 800 !important;
@@ -46,7 +46,7 @@ st.markdown("""
         font-weight: bold !important;
     }
     
-    /* 4. "Tizimdan chiqish" tugmasi shriftini yana kichraytirish va ixcham qilish */
+    /* 3. "Tizimdan chiqish" tugmasi kichik va chap pastki burchakda */
     [data-testid="stSidebar"] .stButton button {
         font-size: 13px !important;
         padding: 5px 10px !important;
@@ -56,17 +56,17 @@ st.markdown("""
     /* Asosiy tugmalar */
     .stButton button { font-size: 18px !important; border-radius: 8px !important; }
     
-    /* 5. Oxirgi to'lov cheki yorqin yashil va aniq ko'rinishi uchun */
+    /* 4. OXIRGI TO'LOV CHEKI - ANIQ VA YORQIN YASHIL FON */
     div.stSuccess {
-        background-color: rgba(10, 130, 50, 0.95) !important;
+        background-color: #0d5c2e !important;
         border: 2px solid #00ff66 !important;
-        color: #ffffff !important;
+        opacity: 1 !important;
         border-radius: 10px;
         padding: 15px;
     }
-    div.stSuccess p, div.stSuccess span {
+    div.stSuccess * {
         color: #ffffff !important;
-        font-size: 18px !important;
+        font-size: 17px !important;
     }
     
     /* Stol kartochkalari foni */
