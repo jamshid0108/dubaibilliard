@@ -10,11 +10,33 @@ STATE_FILE = "tables_state.json"
 
 st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="wide")
 
+# --- CSS: ORQA FONGA RASM QO'SHISH VA STIL BERISH ---
 st.markdown("""
     <style>
+    /* Asosiy orqa fon va overlay (xiralashtirish) */
+    .stApp {
+        background-image: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), 
+                          url("https://images.unsplash.com/photo-1511193311914-0346f16efe90?q=80&w=1920");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }
+    
+    /* Matnlarni tiniq ko'rsatish */
+    h1, h2, h3, h4, p, span, label {
+        color: #ffffff !important;
+    }
+    
+    /* Shriftlar va tugmalar kattaligi */
     .stRadio label { font-size: 20px !important; font-weight: bold !important; }
     .stButton button { font-size: 18px !important; border-radius: 8px !important; }
-    p, span { font-size: 18px !important; }
+    
+    /* Kartochkalar va bloklar foni */
+    [data-testid="stVerticalBlock"] > div {
+        background-color: rgba(20, 20, 20, 0.6);
+        border-radius: 12px;
+        padding: 10px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -35,7 +57,7 @@ def save_history(history_data):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(history_data, f, ensure_ascii=False, indent=2)
 
-# --- STOLLAR HOLATINI DISKDA SAQLASH (REFRESH UCHUN) ---
+# --- STOLLAR HOLATINI DISKDA SAQLASH ---
 def load_tables_state():
     default_tables = {
         "1": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
