@@ -6,29 +6,22 @@ import os
 RATE_REGULAR = 50000 
 RATE_DISCOUNT = 40000
 DATA_FILE = "billiard_history.json"
+STATE_FILE = "tables_state.json"
 
 st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="wide")
 
-# Shriftlarni kattalashtirish
 st.markdown("""
     <style>
-    .stRadio label {
-        font-size: 20px !important;
-        font-weight: bold !important;
-    }
-    .stButton button {
-        font-size: 18px !important;
-        border-radius: 8px !important;
-    }
-    p, span {
-        font-size: 18px !important;
-    }
+    .stRadio label { font-size: 20px !important; font-weight: bold !important; }
+    .stButton button { font-size: 18px !important; border-radius: 8px !important; }
+    p, span { font-size: 18px !important; }
     </style>
 """, unsafe_allow_html=True)
 
 def get_local_time():
     return datetime.datetime.utcnow() + datetime.timedelta(hours=5)
 
+# --- TARIX FAYLI ---
 def load_history():
     if os.path.exists(DATA_FILE):
         try:
@@ -42,16 +35,44 @@ def save_history(history_data):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(history_data, f, ensure_ascii=False, indent=2)
 
+# --- STOLLAR HOLATINI DISKDA SAQLASH (REFRESH UCHUN) ---
+def load_tables_state():
+    default_tables = {
+        "1": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
+        "2": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
+        "3": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
+        "4": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
+    }
+    if os.path.exists(STATE_FILE):
+        try:
+            with open(STATE_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                for k, v in data.items():
+                    if v["start_time"]:
+                        v["start_time"] = datetime.datetime.fromisoformat(v["start_time"])
+                return data
+        except:
+            return default_tables
+    return default_tables
+
+def save_tables_state(tables_data):
+    serializable_tables = {}
+    for k, v in tables_data.items():
+        serializable_tables[str(k)] = {
+            "active": v["active"],
+            "start_time": v["start_time"].isoformat() if v["start_time"] else None,
+            "rate": v["rate"],
+            "is_vip": v["is_vip"]
+        }
+    with open(STATE_FILE, "w", encoding="utf-8") as f:
+        json.dump(serializable_tables, f, ensure_ascii=False, indent=2)
+
+# Xotiralarni yuklash
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
 if "tables" not in st.session_state:
-    st.session_state.tables = {
-        1: {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
-        2: {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
-        3: {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
-        4: {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
-    }
+    st.session_state.tables = load_tables_state()
 
 if "last_receipt" not in st.session_state:
     st.session_state.last_receipt = None
@@ -74,7 +95,7 @@ else:
     st.sidebar.title("🎱 Dubai Billiard")
     page = st.sidebar.radio("Bo'limni tanlang:", ["Stollar nazorati (Obshiy zal)", "Bar va Saqlash", "Kassa va Hisobot"])
     
-    for _ in range(10):
+    for _ in range(5):
         st.sidebar.write("")
         
     if st.sidebar.button("🚪 Tizimdan chiqish", type="secondary"):
@@ -97,7 +118,7 @@ else:
         
         for i in range(1, 5):
             col = cols[(i - 1) % 2]
-            table = st.session_state.tables[i]
+            table = st.session_state.tables[str(i)]
             
             with col:
                 status_icon = "🔴" if table['active'] else "🟢"
@@ -137,6 +158,7 @@ else:
                         
                         table['active'] = False
                         table['start_time'] = None
+                        save_tables_state(st.session_state.tables)
                         st.rerun()
                 else:
                     st.success("Holati: Bo'sh")
@@ -149,6 +171,7 @@ else:
                             table['rate'] = RATE_REGULAR
                             table['is_vip'] = False
                             st.session_state.last_receipt = None
+                            save_tables_state(st.session_state.tables)
                             st.rerun()
                     with btn_col2:
                         if st.button("⭐ Skidka (40 ming)", key="start_disc_" + str(i)):
@@ -157,6 +180,7 @@ else:
                             table['rate'] = RATE_DISCOUNT
                             table['is_vip'] = True
                             st.session_state.last_receipt = None
+                            save_tables_state(st.session_state.tables)
                             st.rerun()
                             
                 st.write("---")
