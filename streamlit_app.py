@@ -10,7 +10,7 @@ STATE_FILE = "tables_state.json"
 
 st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="wide")
 
-# --- CSS: DIZAYN VA TO'LOV CHEKINI YASHIL QILISH ---
+# --- CSS: DIZAYN VA YASHIL CHEK ---
 st.markdown("""
     <style>
     /* 1. Asosiy orqa fon */
@@ -96,18 +96,20 @@ def save_history(history_data):
 
 def load_tables_state():
     default_tables = {
-        "1": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
-        "2": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
-        "3": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
-        "4": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
+        "1": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False, "last_stopped_time": None},
+        "2": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False, "last_stopped_time": None},
+        "3": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False, "last_stopped_time": None},
+        "4": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False, "last_stopped_time": None},
     }
     if os.path.exists(STATE_FILE):
         try:
             with open(STATE_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 for k, v in data.items():
-                    if v["start_time"]:
+                    if v.get("start_time"):
                         v["start_time"] = datetime.datetime.fromisoformat(v["start_time"])
+                    if v.get("last_stopped_time"):
+                        v["last_stopped_time"] = datetime.datetime.fromisoformat(v["last_stopped_time"])
                 return data
         except:
             return default_tables
@@ -120,7 +122,8 @@ def save_tables_state(tables_data):
             "active": v["active"],
             "start_time": v["start_time"].isoformat() if v["start_time"] else None,
             "rate": v["rate"],
-            "is_vip": v["is_vip"]
+            "is_vip": v["is_vip"],
+            "last_stopped_time": v["last_stopped_time"].isoformat() if v["last_stopped_time"] else None
         }
     with open(STATE_FILE, "w", encoding="utf-8") as f:
         json.dump(serializable_tables, f, ensure_ascii=False, indent=2)
@@ -165,10 +168,29 @@ else:
         
         if st.session_state.last_receipt:
             rec = st.session_state.last_receipt
-            st.success("🧾 **OXIRGI TO'LOV CHEKI:** " + str(rec['table']) + "-Stol | Jami vaqt: " + str(rec['minutes']) + " daqiqa | **TO'LANADIGAN SUMMA: " + str(rec['cost']) + " so'm**")
-            if st.button("Yopish"):
-                st.session_state.last_receipt = None
-                st.rerun()
+            t_num = rec['table']
+            st.success("🧾 **OXIRGI TO'LOV CHEKI:** " + str(t_num) + "-Stol | Jami vaqt: " + str(rec['minutes']) + " daqiqa | **TO'LANADIGAN SUMMA: " + str(rec['cost']) + " so'm**")
+            
+            b_col1, b_col2 = st.columns(2)
+            with b_col1:
+                if st.button("Yopish"):
+                    st.session_state.last_receipt = None
+                    st.rerun()
+            with b_col2:
+                if st.button("▶️ Davom ettirish"):
+                    # O'yinni o'sha yerdan davom ettiramiz
+                    table = st.session_state.tables[str(t_num)]
+                    if table['last_stopped_time']:
+                        # To'xtatilgan vaqtdan boshlab vaqt farqini hisoblab, boshlanish vaqtini oldinga suramiz
+                        now = get_local_time()
+                        paused_duration = now - table['last_stopped_time']
+                        table['start_time'] = table['start_time'] + paused_duration
+                    
+                    table['active'] = True
+                    table['last_stopped_time'] = None
+                    save_tables_state(st.session_state.tables)
+                    st.session_state.last_receipt = None
+                    st.rerun()
             st.write("---")
 
         cols = st.columns(2)
@@ -210,11 +232,11 @@ else:
                         st.session_state.last_receipt = {
                             "table": i,
                             "minutes": minutes,
-                            "cost": cost
+                    "cost": cost
                         }
                         
                         table['active'] = False
-                        table['start_time'] = None
+                        table['last_stopped_time'] = end_time # To'xtatilgan vaqtni saqlaymiz
                         save_tables_state(st.session_state.tables)
                         st.rerun()
                 else:
@@ -227,6 +249,7 @@ else:
                             table['start_time'] = get_local_time()
                             table['rate'] = RATE_REGULAR
                             table['is_vip'] = False
+                            table['last_stopped_time'] = None
                             st.session_state.last_receipt = None
                             save_tables_state(st.session_state.tables)
                             st.rerun()
@@ -236,6 +259,7 @@ else:
                             table['start_time'] = get_local_time()
                             table['rate'] = RATE_DISCOUNT
                             table['is_vip'] = True
+                            table['last_stopped_time'] = None
                             st.session_state.last_receipt = None
                             save_tables_state(st.session_state.tables)
                             st.rerun()
