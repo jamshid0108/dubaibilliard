@@ -10,7 +10,7 @@ STATE_FILE = "tables_state.json"
 
 st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="wide")
 
-# --- CSS: DIZAYN VA YASHIL CHEK ---
+# --- CSS: DIZAYN VA TUGMALARNI YONMA-YON QILISH ---
 st.markdown("""
     <style>
     /* 1. Asosiy orqa fon */
@@ -171,17 +171,16 @@ else:
             t_num = rec['table']
             st.success("🧾 **OXIRGI TO'LOV CHEKI:** " + str(t_num) + "-Stol | Jami vaqt: " + str(rec['minutes']) + " daqiqa | **TO'LANADIGAN SUMMA: " + str(rec['cost']) + " so'm**")
             
-            b_col1, b_col2 = st.columns(2)
-            with b_col1:
-                if st.button("Yopish"):
+            # Tugmalarni yonma-yon qilish uchun kichik ustunlar va o'nga surish uchun bo'sh ustun
+            _, col_btn1, col_btn2 = st.columns([3, 1, 1.2])
+            with col_btn1:
+                if st.button("Yopish", use_container_width=True):
                     st.session_state.last_receipt = None
                     st.rerun()
-            with b_col2:
-                if st.button("▶️ Davom ettirish"):
-                    # O'yinni o'sha yerdan davom ettiramiz
+            with col_btn2:
+                if st.button("▶️ Davom ettirish", use_container_width=True):
                     table = st.session_state.tables[str(t_num)]
                     if table['last_stopped_time']:
-                        # To'xtatilgan vaqtdan boshlab vaqt farqini hisoblab, boshlanish vaqtini oldinga suramiz
                         now = get_local_time()
                         paused_duration = now - table['last_stopped_time']
                         table['start_time'] = table['start_time'] + paused_duration
@@ -232,11 +231,11 @@ else:
                         st.session_state.last_receipt = {
                             "table": i,
                             "minutes": minutes,
-                    "cost": cost
+                            "cost": cost
                         }
                         
                         table['active'] = False
-                        table['last_stopped_time'] = end_time # To'xtatilgan vaqtni saqlaymiz
+                        table['last_stopped_time'] = end_time
                         save_tables_state(st.session_state.tables)
                         st.rerun()
                 else:
