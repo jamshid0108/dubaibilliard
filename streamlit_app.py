@@ -1,14 +1,14 @@
 import streamlit as st
 import datetime
 
-# Login va parol
-ADMIN_USER = "admin"
-ADMIN_PASS = "dubaibilliard5300"
-
 RATE_REGULAR = 50000 
 RATE_DISCOUNT = 40000
 
 st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="wide")
+
+# Toshkent vaqtini olish (UTC + 5 soat)
+def get_local_time():
+    return datetime.datetime.utcnow() + datetime.timedelta(hours=5)
 
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -21,22 +21,25 @@ if "tables" not in st.session_state:
         4: {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False},
     }
 
-# Login formasi
+# Oxirgi to'xtatilgan stol cheki uchun
+if "last_receipt" not in st.session_state:
+    st.session_state.last_receipt = None
+
+# --- LOGIN OYNASI ---
 if not st.session_state.logged_in:
     st.title("🎱 Dubai Billiard Club")
     st.subheader("Boshqaruv paneliga kirish")
     
-    user_input = st.text_input("Login")
-    pass_input = st.text_input("Parol", type="password")
+    u = st.text_input("Login").strip()
+    p = st.text_input("Parol", type="password").strip()
     
-    if st.button("Kirish"):
-        if user_input == ADMIN_USER and pass_input == ADMIN_PASS:
+    if st.button("Kirish", type="primary"):
+        if u.lower() == "admin" and p == "dubaibilliard5300":
             st.session_state.logged_in = True
             st.rerun()
         else:
             st.error("Login yoki parol noto'g'ri!")
 else:
-    # Asosiy panel
     st.sidebar.title("🎱 Dubai Billiard")
     page = st.sidebar.radio("Bo'limni tanlang:", ["Stollar nazorati (Obshiy zal)", "Bar va Saqlash", "Kassa va Hisobot"])
     
@@ -47,6 +50,15 @@ else:
     if page == "Stollar nazorati (Obshiy zal)":
         st.title("📊 Obshiy zal — 4 ta stol nazorati")
         
+        # Agar oxirgi to'xtatilgan stol bo'lsa, chekni ko'rsatish
+        if st.session_state.last_receipt:
+            rec = st.session_state.last_receipt
+            st.success("🧾 **OXIRGI TO'LOV CHEKI:** " + str(rec['table']) + "-Stol | Jami vaqt: " + str(rec['minutes']) + " daqiqa | **TO'LANADIGAN SUMMA: " + str(rec['cost']) + " so'm**")
+            if st.button("Yopish"):
+                st.session_state.last_receipt = None
+                st.rerun()
+            st.write("---")
+
         cols = st.columns(2)
         
         for i in range(1, 5):
@@ -58,7 +70,7 @@ else:
                 st.subheader(status_icon + " " + str(i) + "-Stol")
                 
                 if table['active']:
-                    now = datetime.datetime.now()
+                    now = get_local_time()
                     elapsed = now - table['start_time']
                     minutes = int(elapsed.total_seconds() // 60)
                     cost = int((elapsed.total_seconds() / 3600) * table['rate'])
@@ -71,9 +83,13 @@ else:
                     st.write("**Joriy summa:** " + str(cost) + " so'm")
                     
                     if st.button("To'xtatish va hisoblash", key="stop_" + str(i)):
+                        st.session_state.last_receipt = {
+                            "table": i,
+                            "minutes": minutes,
+                            "cost": cost
+                        }
                         table['active'] = False
                         table['start_time'] = None
-                        st.success(str(i) + "-Stol to'xtatildi! Jami summa: " + str(cost) + " so'm")
                         st.rerun()
                 else:
                     st.success("Holati: Bo'sh")
@@ -82,24 +98,24 @@ else:
                     with btn_col1:
                         if st.button("Boshlash (50 ming)", key="start_reg_" + str(i)):
                             table['active'] = True
-                            table['start_time'] = datetime.datetime.now()
+                            table['start_time'] = get_local_time()
                             table['rate'] = RATE_REGULAR
                             table['is_vip'] = False
+                            st.session_state.last_receipt = None
                             st.rerun()
                     with btn_col2:
                         if st.button("⭐ Skidka (40 ming)", key="start_disc_" + str(i)):
                             table['active'] = True
-                            table['start_time'] = datetime.datetime.now()
+                            table['start_time'] = get_local_time()
                             table['rate'] = RATE_DISCOUNT
                             table['is_vip'] = True
+                            st.session_state.last_receipt = None
                             st.rerun()
                             
                 st.write("---")
 
     elif page == "Bar va Saqlash":
         st.title("🥤 Bar va saqlash xonasi")
-        st.info("Bar mahsulotlari boshqaruvi")
 
     elif page == "Kassa va Hisobot":
         st.title("💰 Kunlik kassa va daromadlar")
-        st.metric(label="Bugungi tushum", value="0 UZS")
