@@ -9,10 +9,27 @@ DATA_FILE = "billiard_history.json"
 
 st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="wide")
 
+# Shriftlarni kattalashtirish uchun CSS uslubi
+st.markdown("""
+    <style>
+    /* Yon menyu va tugmalar shriftini kattalashtirish */
+    .stRadio label {
+        font-size: 20px !important;
+        font-weight: bold !important;
+    }
+    .stButton button {
+        font-size: 18px !important;
+        border-radius: 8px !important;
+    }
+    p, span {
+        font-size: 18px !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 def get_local_time():
     return datetime.datetime.utcnow() + datetime.timedelta(hours=5)
 
-# Tarixni fayldan o'qish
 def load_history():
     if os.path.exists(DATA_FILE):
         try:
@@ -22,7 +39,6 @@ def load_history():
             return []
     return []
 
-# Tarixni faylga saqlash
 def save_history(history_data):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(history_data, f, ensure_ascii=False, indent=2)
@@ -59,7 +75,11 @@ else:
     st.sidebar.title("🎱 Dubai Billiard")
     page = st.sidebar.radio("Bo'limni tanlang:", ["Stollar nazorati (Obshiy zal)", "Bar va Saqlash", "Kassa va Hisobot"])
     
-    if st.sidebar.button("Tizimdan chiqish"):
+    # "Tizimdan chiqish" tugmasini pastga tushirish uchun bo'sh joylar
+    for _ in range(10):
+        st.sidebar.write("")
+        
+    if st.sidebar.button("🚪 Tizimdan chiqish", type="secondary"):
         st.session_state.logged_in = False
         st.rerun()
 
@@ -101,7 +121,6 @@ else:
                     if st.button("To'xtatish va hisoblash", key="stop_" + str(i)):
                         end_time = get_local_time()
                         
-                        # Tarixga doimiy fayl sifatida saqlash
                         history = load_history()
                         history.append({
                             "sana": end_time.strftime("%Y-%m-%d"),
@@ -154,12 +173,9 @@ else:
         history = load_history()
         
         if history:
-            # Barcha mavjud sanalarni olish va teskari tartibda saralash
             available_dates = sorted(list(set(item['sana'] for item in history)), reverse=True)
-            
             selected_date = st.selectbox("📅 Sanani tanlang:", available_dates)
             
-            # Tanlangan sana bo'yicha filter
             day_records = [item for item in history if item['sana'] == selected_date]
             day_total = sum(item['summa'] for item in day_records)
             
