@@ -14,14 +14,7 @@ st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="w
 # --- CSS: DIZAYN VA TUGMALAR UCHUN ---
 st.markdown("""
     <style>
-        # Yuqoridagi va pastdagi ortiqcha Streamlit tugmalarini yashirish
-    #MainMenu {visibility: hidden;}
-    header {visibility: hidden;}
-    .stAppToolbar {display: none !important;}
-    [data-testid="stDecoration"] {display: none;}
-    footer {visibility: hidden;}
-
-    .stApp {
+   .stApp {
         background-image: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), 
                           url("https://images.unsplash.com/photo-1511193311914-0346f16efe90?q=80&w=1920");
         background-size: cover;
