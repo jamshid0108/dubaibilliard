@@ -116,17 +116,39 @@ def save_tables_state(tables_data):
         json.dump(serializable_tables, f, ensure_ascii=False, indent=2)
 
 def load_bar_stock():
+    today_str = get_local_time().strftime("%Y-%m-%d")
     default_bar = {
-        "Shisha cola": {"initial": 48, "sold": 0, "price": 5000, "unit": "dona"},
-        "Shisha fanta": {"initial": 24, "sold": 0, "price": 5000, "unit": "dona"},
-        "Coca cola 1.5l": {"initial": 6, "sold": 0, "price": 20000, "unit": "dona"},
-        "Parlament": {"initial": 2, "sold": 0, "price": 27000, "unit": "pachka", "note": "dona 2000 som"},
-        "Winston caster": {"initial": 2, "sold": 0, "price": 27000, "unit": "pachka", "note": "dona 2000 som"}
+        "Shisha cola": {
+            "price": 5000, "unit": "dona", "sold": 0,
+            "batches": [{"date": today_str, "qty": 48}]
+        },
+        "Shisha fanta": {
+            "price": 5000, "unit": "dona", "sold": 0,
+            "batches": [{"date": today_str, "qty": 24}]
+        },
+        "Coca cola 1.5l": {
+            "price": 20000, "unit": "dona", "sold": 0,
+            "batches": [{"date": today_str, "qty": 6}]
+        },
+        "Parlament": {
+            "price": 27000, "unit": "pachka", "sold": 0, "note": "dona 2000 som",
+            "batches": [{"date": today_str, "qty": 2}]
+        },
+        "Winston caster": {
+            "price": 27000, "unit": "pachka", "sold": 0, "note": "dona 2000 som",
+            "batches": [{"date": today_str, "qty": 2}]
+        }
     }
     if os.path.exists(BAR_FILE):
         try:
             with open(BAR_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+                # Eski formatni yangi partiyali formatga moslashtirish uchun tekshiruv
+                for k, v in data.items():
+                    if "batches" not in v:
+                        initial_val = v.get("initial", 0)
+                        v["batches"] = [{"date": today_str, "qty": initial_val}]
+                return data
         except:
             return default_bar
     return default_bar
@@ -179,7 +201,6 @@ else:
             rec = st.session_state.last_receipt
             t_num = rec['table']
             
-            # Chek matnini yig'ish
             bar_items_text = ""
             if rec['bar_items']:
                 bar_items_text = " | Bar mahsulotlari: " + ", ".join([f"{item['name']} ({item['qty']} ta) - {item['total']:,} so'm" for item in rec['bar_items']])
@@ -191,7 +212,6 @@ else:
                 if st.button("Yopish", use_container_width=True):
                     history = load_history()
                     
-                    # Tarixga to'liq yozish
                     bar_summary_str = "Yo'q"
                     if rec['bar_items']:
                         bar_summary_str = ", ".join([f"{i['name']} x{i['qty']}" for i in rec['bar_items']])
@@ -206,7 +226,6 @@ else:
                     })
                     save_history(history)
                     
-                    # Stolni butunlay tozalash
                     table = st.session_state.tables[str(t_num)]
                     table['cart'] = []
                     save_tables_state(st.session_state.tables)
@@ -228,7 +247,6 @@ else:
                     st.rerun()
             with col_btn3:
                 if st.button("❌ Rad qilish", use_container_width=True):
-                    # Rad qilinsa bar mahsulotlarini omborga qaytarib beramiz (bekor qilinadi)
                     bar = load_bar_stock()
                     for b_item in rec['bar_items']:
                         if b_item['name'] in bar:
@@ -256,7 +274,6 @@ else:
                     minutes = int(elapsed.total_seconds() // 60)
                     time_cost = int((elapsed.total_seconds() / 3600) * table['rate'])
                     
-                    # Stolga qo'shilgan mahsulotlar summasini qo'shish
                     bar_cart_total = sum(item['total'] for item in table.get('cart', []))
                     total_cost = time_cost + bar_cart_total
                     
@@ -275,7 +292,6 @@ else:
                     
                     st.markdown(f"### 💵 Jami to'lov: {total_cost:,} so'm")
                     
-                    # Stolga bar mahsuloti qo'shish expanderi
                     with st.expander("➕ Stolga bar mahsuloti qo'shish"):
                         bar = st.session_state.bar_stock
                         selected_prod = st.selectbox("Mahsulotni tanlang:", list(bar.keys()), key=f"sel_prod_{i}")
@@ -283,13 +299,13 @@ else:
                         
                         if st.button("Stolga qo'shish", key=f"add_to_table_{i}"):
                             p_data = bar[selected_prod]
-                            remaining = p_data['initial'] - p_data['sold']
+                            total_initial = sum(b['qty'] for b in p_data['batches'])
+                            remaining = total_initial - p_data['sold']
+                            
                             if prod_qty <= remaining:
-                                # Omvordan sotildi deb yozamiz
                                 p_data['sold'] += prod_qty
                                 save_bar_stock(bar)
                                 
-                                # Stolning savatiga qo'shamiz
                                 item_total = prod_qty * p_data['price']
                                 table['cart'].append({
                                     "name": selected_prod,
@@ -351,21 +367,27 @@ else:
     # 2-BO'LIM: BAR VA SAQLASH
     elif page == "Bar va Saqlash":
         st.title("🥤 Bar va saqlash xonasi")
-        st.write("Mahsulotlar savdosi, qolgan miqdori va narxlari:")
+        st.write("Mahsulotlar savdosi, qolgan miqdori, narxlari va kelish partiyalari:")
         st.write("---")
         
         bar = st.session_state.bar_stock
         
         for item_name, data in bar.items():
-            remaining = data['initial'] - data['sold']
+            total_initial = sum(b['qty'] for b in data['batches'])
+            remaining = total_initial - data['sold']
             
             st.subheader(f"📦 {item_name}")
             st.write(f"💰 Narxi: **{data['price']:,} so'm** ({data.get('note', data['unit'])})")
-            st.write(f"✅ Qolgani: **{remaining} {data['unit']}** (Jami olib kelingan: {data['initial']}, Sotilgan: {data['sold']})")
+            st.write(f"✅ Qolgani: **{remaining} {data['unit']}** (Jami olib kelingan: {total_initial}, Sotilgan: {data['sold']})")
+            
+            # Partiyalar tarixini ko'rsatish
+            with st.expander(f"📅 Kelish partiyalari tarixi ({item_name})"):
+                for b in data['batches']:
+                    st.write(f"- Kelgan sanasi: **{b['date']}** | Miqdori: **{b['qty']} {data['unit']}**")
             
             col_s1, col_s2, col_s3 = st.columns([2, 1, 1])
             with col_s1:
-                new_sold = st.number_input(f"Sotilgan sonini kiritish ({item_name})", min_value=0, max_value=data['initial'], value=data['sold'], key=f"sold_{item_name}")
+                new_sold = st.number_input(f"Sotilgan sonini kiritish ({item_name})", min_value=0, max_value=total_initial, value=data['sold'], key=f"sold_{item_name}")
             with col_s2:
                 if st.button(f"Yangilash", key=f"btn_upd_{item_name}"):
                     diff = new_sold - data['sold']
@@ -383,14 +405,18 @@ else:
                         })
                         save_history(history)
                     
-                    bar[item_name]['sold'] = new_sold
+                    data['sold'] = new_sold
                     save_bar_stock(bar)
                     st.success("Muvaffaqiyatli saqlandi va kassaga qo'shildi!")
                     st.rerun()
             with col_s3:
-                if st.button(f"➕ Qo'shish", key=f"btn_add_{item_name}"):
-                    bar[item_name]['initial'] += 1
+                # Yangi partiya qo'shish uchun tugma va miqdor
+                add_qty = st.number_input(f"Qo'shish miqdori", min_value=1, value=1, key=f"add_qty_{item_name}")
+                if st.button(f"➕ Yangi partiya qo'shish", key=f"btn_add_{item_name}"):
+                    today_str = get_local_time().strftime("%Y-%m-%d")
+                    data['batches'].append({"date": today_str, "qty": add_qty})
                     save_bar_stock(bar)
+                    st.success(f"Yangi partiya ({add_qty} ta) qo'shildi!")
                     st.rerun()
             st.write("---")
 
