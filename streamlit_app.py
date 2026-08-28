@@ -14,7 +14,6 @@ st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="w
 # --- CSS: DIZAYN VA TUGMALAR UCHUN ---
 st.markdown("""
     <style>
-    /* 1. Asosiy orqa fon */
     .stApp {
         background-image: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), 
                           url("https://images.unsplash.com/photo-1511193311914-0346f16efe90?q=80&w=1920");
@@ -22,42 +21,28 @@ st.markdown("""
         background-position: center;
         background-attachment: fixed;
     }
-    
-    /* 2. Yon panel (Sidebar) biroz shaffof qora */
     [data-testid="stSidebar"] {
         background-color: rgba(18, 18, 18, 0.82) !important;
         border-right: 1px solid rgba(255, 255, 255, 0.1);
     }
-    
-    /* Matnlarni tiniq ko'rsatish */
     h1, h2, h3, h4, p, span, label {
         color: #ffffff !important;
     }
-    
-    /* Sidebar sarlavhasi ("Dubai Billiard") */
     [data-testid="stSidebar"] h1 {
         font-size: 30px !important;
         font-weight: 800 !important;
-        letter-spacing: 0.5px;
     }
-    
-    /* Sidebar menyu yozuvlari */
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] label {
         font-size: 20px !important;
         font-weight: bold !important;
     }
-    
-    /* 3. "Tizimdan chiqish" tugmasi kichik va chap pastki burchakda */
     [data-testid="stSidebar"] .stButton button {
         font-size: 13px !important;
         padding: 5px 10px !important;
         border-radius: 6px !important;
     }
-    
-    /* Asosiy tugmalar */
     .stButton button { font-size: 17px !important; border-radius: 8px !important; }
     
-    /* 4. OXIRGI TO'LOV CHEKI - ANIQ VA YORQIN YASHIL FON */
     div.stSuccess {
         background-color: #0d5c2e !important;
         border: 2px solid #00ff66 !important;
@@ -69,8 +54,6 @@ st.markdown("""
         color: #ffffff !important;
         font-size: 17px !important;
     }
-    
-    /* Stol va bar kartochkalari foni */
     [data-testid="stVerticalBlock"] > div {
         background-color: rgba(40, 40, 40, 0.5) !important;
         border-radius: 12px;
@@ -97,10 +80,10 @@ def save_history(history_data):
 
 def load_tables_state():
     default_tables = {
-        "1": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False, "last_stopped_time": None},
-        "2": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False, "last_stopped_time": None},
-        "3": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False, "last_stopped_time": None},
-        "4": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False, "last_stopped_time": None},
+        "1": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False, "last_stopped_time": None, "cart": []},
+        "2": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False, "last_stopped_time": None, "cart": []},
+        "3": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False, "last_stopped_time": None, "cart": []},
+        "4": {"start_time": None, "active": False, "rate": RATE_REGULAR, "is_vip": False, "last_stopped_time": None, "cart": []},
     }
     if os.path.exists(STATE_FILE):
         try:
@@ -111,6 +94,8 @@ def load_tables_state():
                         v["start_time"] = datetime.datetime.fromisoformat(v["start_time"])
                     if v.get("last_stopped_time"):
                         v["last_stopped_time"] = datetime.datetime.fromisoformat(v["last_stopped_time"])
+                    if "cart" not in v:
+                        v["cart"] = []
                 return data
         except:
             return default_tables
@@ -124,7 +109,8 @@ def save_tables_state(tables_data):
             "start_time": v["start_time"].isoformat() if v["start_time"] else None,
             "rate": v["rate"],
             "is_vip": v["is_vip"],
-            "last_stopped_time": v["last_stopped_time"].isoformat() if v["last_stopped_time"] else None
+            "last_stopped_time": v["last_stopped_time"].isoformat() if v["last_stopped_time"] else None,
+            "cart": v.get("cart", [])
         }
     with open(STATE_FILE, "w", encoding="utf-8") as f:
         json.dump(serializable_tables, f, ensure_ascii=False, indent=2)
@@ -192,25 +178,43 @@ else:
         if st.session_state.last_receipt:
             rec = st.session_state.last_receipt
             t_num = rec['table']
-            st.success("🧾 **OXIRGI TO'LOV CHEKI:** " + str(t_num) + "-Stol | Jami vaqt: " + str(rec['minutes']) + " daqiqa | **TO'LANADIGAN SUMMA: " + str(rec['cost']) + " so'm**")
+            
+            # Chek matnini yig'ish
+            bar_items_text = ""
+            if rec['bar_items']:
+                bar_items_text = " | Bar mahsulotlari: " + ", ".join([f"{item['name']} ({item['qty']} ta) - {item['total']:,} so'm" for item in rec['bar_items']])
+            
+            st.success(f"🧾 **OXIRGI TO'LOV CHEKI:** {t_num}-Stol | Vaqt: {rec['minutes']} daq ({rec['time_cost']:,} so'm){bar_items_text} | **JAMI: {rec['total_cost']:,} so'm**")
             
             col_btn1, col_btn2, col_btn3 = st.columns(3)
             with col_btn1:
                 if st.button("Yopish", use_container_width=True):
                     history = load_history()
+                    
+                    # Tarixga to'liq yozish
+                    bar_summary_str = "Yo'q"
+                    if rec['bar_items']:
+                        bar_summary_str = ", ".join([f"{i['name']} x{i['qty']}" for i in rec['bar_items']])
+
                     history.append({
                         "sana": get_local_time().strftime("%Y-%m-%d"),
-                        "turi": "Stol",
-                        "nomi": f"{t_num}-Stol o'yini",
+                        "turi": "Stol va Bar",
+                        "nomi": f"{t_num}-Stol yakuniy hisob",
                         "vaqt": rec['start_str'] + " - " + rec['end_str'],
-                        "tafsilot": f"{rec['minutes']} daqiqa",
-                        "summa": rec['cost']
+                        "tafsilot": f"O'yin: {rec['minutes']} daq. Bar: {bar_summary_str}",
+                        "summa": rec['total_cost']
                     })
                     save_history(history)
+                    
+                    # Stolni butunlay tozalash
+                    table = st.session_state.tables[str(t_num)]
+                    table['cart'] = []
+                    save_tables_state(st.session_state.tables)
+                    
                     st.session_state.last_receipt = None
                     st.rerun()
             with col_btn2:
-                if st.button("▶️ Davom", use_container_width=True):
+                if st.button("▶️ Davom ettirish", use_container_width=True):
                     table = st.session_state.tables[str(t_num)]
                     if table['last_stopped_time']:
                         now = get_local_time()
@@ -224,6 +228,14 @@ else:
                     st.rerun()
             with col_btn3:
                 if st.button("❌ Rad qilish", use_container_width=True):
+                    # Rad qilinsa bar mahsulotlarini omborga qaytarib beramiz (bekor qilinadi)
+                    bar = load_bar_stock()
+                    for b_item in rec['bar_items']:
+                        if b_item['name'] in bar:
+                            bar[b_item['name']]['sold'] -= b_item['qty']
+                    save_bar_stock(bar)
+                    st.session_state.bar_stock = bar
+                    
                     st.session_state.last_receipt = None
                     st.rerun()
             st.write("---")
@@ -242,24 +254,67 @@ else:
                     now = get_local_time()
                     elapsed = now - table['start_time']
                     minutes = int(elapsed.total_seconds() // 60)
-                    cost = int((elapsed.total_seconds() / 3600) * table['rate'])
+                    time_cost = int((elapsed.total_seconds() / 3600) * table['rate'])
+                    
+                    # Stolga qo'shilgan mahsulotlar summasini qo'shish
+                    bar_cart_total = sum(item['total'] for item in table.get('cart', []))
+                    total_cost = time_cost + bar_cart_total
                     
                     rate_type_str = "⭐ Doimiy klient (40 ming)" if table['is_vip'] else "Standard (50 ming)"
                     
                     st.error("Holati: Band (" + str(minutes) + " daqiqa)")
                     st.write("**Tarif:** " + rate_type_str)
                     st.write("**Boshlangan vaqt:** " + table['start_time'].strftime('%H:%M'))
-                    st.write("**Joriy summa:** " + str(cost) + " so'm")
+                    st.write(f"**O'yin summasi:** {time_cost:,} so'm")
                     
+                    if table.get('cart'):
+                        st.write("**Stoldagi mahsulotlar:**")
+                        for cart_item in table['cart']:
+                            st.write(f"- {cart_item['name']} ({cart_item['qty']} ta) = {cart_item['total']:,} so'm")
+                        st.write(f"**Bar jami:** {bar_cart_total:,} so'm")
+                    
+                    st.markdown(f"### 💵 Jami to'lov: {total_cost:,} so'm")
+                    
+                    # Stolga bar mahsuloti qo'shish expanderi
+                    with st.expander("➕ Stolga bar mahsuloti qo'shish"):
+                        bar = st.session_state.bar_stock
+                        selected_prod = st.selectbox("Mahsulotni tanlang:", list(bar.keys()), key=f"sel_prod_{i}")
+                        prod_qty = st.number_input("Soni:", min_value=1, value=1, key=f"prod_qty_{i}")
+                        
+                        if st.button("Stolga qo'shish", key=f"add_to_table_{i}"):
+                            p_data = bar[selected_prod]
+                            remaining = p_data['initial'] - p_data['sold']
+                            if prod_qty <= remaining:
+                                # Omvordan sotildi deb yozamiz
+                                p_data['sold'] += prod_qty
+                                save_bar_stock(bar)
+                                
+                                # Stolning savatiga qo'shamiz
+                                item_total = prod_qty * p_data['price']
+                                table['cart'].append({
+                                    "name": selected_prod,
+                                    "qty": prod_qty,
+                                    "total": item_total
+                                })
+                                save_tables_state(st.session_state.tables)
+                                st.success(f"{selected_prod} stolga qo'shildi!")
+                                st.rerun()
+                            else:
+                                st.error(f"Omborda yetarli mahsulot yo'q! Qolgani: {remaining}")
+
                     if st.button("To'xtatish va hisoblash", key="stop_" + str(i)):
                         end_time = get_local_time()
+                        
                         st.session_state.last_receipt = {
                             "table": i,
                             "minutes": minutes,
-                            "cost": cost,
+                            "time_cost": time_cost,
+                            "bar_items": table.get('cart', []),
+                            "total_cost": total_cost,
                             "start_str": table['start_time'].strftime('%H:%M'),
                             "end_str": end_time.strftime('%H:%M')
                         }
+                        
                         table['active'] = False
                         table['last_stopped_time'] = end_time
                         save_tables_state(st.session_state.tables)
@@ -275,6 +330,7 @@ else:
                             table['rate'] = RATE_REGULAR
                             table['is_vip'] = False
                             table['last_stopped_time'] = None
+                            table['cart'] = []
                             st.session_state.last_receipt = None
                             save_tables_state(st.session_state.tables)
                             st.rerun()
@@ -285,6 +341,7 @@ else:
                             table['rate'] = RATE_DISCOUNT
                             table['is_vip'] = True
                             table['last_stopped_time'] = None
+                            table['cart'] = []
                             st.session_state.last_receipt = None
                             save_tables_state(st.session_state.tables)
                             st.rerun()
@@ -304,23 +361,22 @@ else:
             
             st.subheader(f"📦 {item_name}")
             st.write(f"💰 Narxi: **{data['price']:,} so'm** ({data.get('note', data['unit'])})")
-            st.write(f"✅ Qolgani: **{remaining} {data['unit']}** (Boshlang'ich: {data['initial']}, Sotilgan: {data['sold']})")
+            st.write(f"✅ Qolgani: **{remaining} {data['unit']}** (Jami olib kelingan: {data['initial']}, Sotilgan: {data['sold']})")
             
             col_s1, col_s2, col_s3 = st.columns([2, 1, 1])
             with col_s1:
                 new_sold = st.number_input(f"Sotilgan sonini kiritish ({item_name})", min_value=0, max_value=data['initial'], value=data['sold'], key=f"sold_{item_name}")
             with col_s2:
                 if st.button(f"Yangilash", key=f"btn_upd_{item_name}"):
-                    diff = new_sold - data['sold']  # Yangi qo'shilib sotilgan miqdor
+                    diff = new_sold - data['sold']
                     if diff > 0:
-                        # Kassaga qo'shish
                         sale_amount = diff * data['price']
                         now_str = get_local_time().strftime("%H:%M")
                         history = load_history()
                         history.append({
                             "sana": get_local_time().strftime("%Y-%m-%d"),
                             "turi": "Bar",
-                            "nomi": f"Bar savdosi: {item_name}",
+                            "nomi": f"Bar savdosi (alohida): {item_name}",
                             "vaqt": now_str,
                             "tafsilot": f"{diff} {data['unit']}",
                             "summa": sale_amount
@@ -353,12 +409,12 @@ else:
             
             st.metric(label=f"💰 {selected_date} kunidagi jami tushum", value=f"{day_total:,} so'm")
             st.write("---")
-            st.subheader(f"📋 {selected_date} sanasidagi barcha kirimlar:")
+            st.subheader(f"📋 {selected_date} sanasidagi barcha kirimlar tarixi:")
             
             for item in reversed(day_records):
                 if item.get("turi") == "Bar":
                     st.write(f"🥤 **{item['nomi']}** | Soni: {item['tafsilot']} | Vaqti: {item['vaqt']} | **To'lov: {item['summa']:,} so'm**")
                 else:
-                    st.write(f"🎱 **{item['nomi']}** | Vaqti: {item['vaqt']} ({item['tafsilot']}) | **To'lov: {item['summa']:,} so'm**")
+                    st.write(f"🎱 **{item['nomi']}** | Vaqti: {item['vaqt']} | Tafsilot: {item['tafsilot']} | **Jami to'lov: {item['summa']:,} so'm**")
         else:
             st.info("Hali hech qanday to'lovlar tarixi saqlanmagan.")
