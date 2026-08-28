@@ -36,10 +36,7 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-
-
-
-    st.markdown("""<style>
+st.markdown("""<style>
 
 
       /* Fork, Streamlit badge va Manage app tugmalarini yashirish */
