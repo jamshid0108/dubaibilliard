@@ -14,6 +14,29 @@ st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="w
 # --- CSS: DIZAYN VA TUGMALAR UCHUN ---
 st.markdown("""
     <style>
+    /* Streamlitning menyu ochish tugmasini topib kattalashtiramiz va ajratib ko'rsatamiz */
+    [data-testid="stSidebarNav"] {
+        /* Agar sidebar elementlari bo'lsa */
+    }
+    
+    /* Chap yuqoridagi menyuni ochuvchi strelka tugma (>> yoki sidebar collapse button) */
+    button[kind="header"] {
+        background-color: #ff4b4b !important; /* Qizil yoki o'zingizga yoqqan rang */
+        color: white !important;
+        border-radius: 10px !important;
+        transform: scale(1.3); /* Hajmini Kattalashtirish */
+        margin-left: 5px;
+    }
+    
+    /* Mobil versiyada yanada yaxshi ko'rinishi uchun */
+    header [data-testid="baseButton-header"] {
+        background-color: #0084ff;
+        border-radius: 8px;
+        padding: 4px;
+    }
+</style>
+""", unsafe_allow_html=True)
+
           /* Fork, Streamlit badge va Manage app tugmalarini yashirish */
     [data-testid="stDecoration"] {display: none !important;}
     .viewerBadge_container__1QSob {display: none !important;}
