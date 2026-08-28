@@ -11,35 +11,36 @@ BAR_FILE = "bar_stock.json"
 
 st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="wide")
 
+# --- CSS: DIZAYN VA TUGMALAR UCHUN ---
 st.markdown("""
 <style>
+    /* Streamlitning menyu ochish tugmasini topish */
+    [data-testid="stSidebarNav"] {
+        /* Agar sidebar elementlari bo'lsa */
+    }
+
+    /* Chap yuqoridagi menyuni ochuvchi strelka tugma */
     button[kind="header"] {
-        background-color: #ff4b4b !important;
+        background-color: #ff4b4b !important; /* Hajmini Kattalashtirish */
         color: white !important;
         border-radius: 10px !important;
         transform: scale(1.3);
         margin-left: 5px;
     }
+
+    /* Mobil versiyada yanada yaxshi ko'rinishi uchun */
     header [data-testid="baseButton-header"] {
         background-color: #0084ff;
         border-radius: 8px;
         padding: 4px;
-    }
-    [data-testid="stDecoration"] {display: none}
-    .viewerBadge_container__1QSob {display: none}
-    #streamlit-statusBar {display: none !important;}
-    [data-testid="manage-app-button"] {display: none}
-    .stApp {
-        background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("https://images.unsplash.com/photo-1543061730-9b62d8542c16");
-        background-size: cover;
-        background-position: center;
     }
 </style>
 """, unsafe_allow_html=True)
 
 
 
-          /* Fork, Streamlit badge va Manage app tugmalarini yashirish */
+
+          # Fork, Streamlit badge va Manage app tugmalarini yashirish */
     [data-testid="stDecoration"] {display: none !important;}
     .viewerBadge_container__1QSob {display: none !important;}
     #streamlit-statusBar {display: none !important;}
