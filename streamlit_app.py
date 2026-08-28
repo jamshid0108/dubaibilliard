@@ -38,7 +38,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-          # Fork, Streamlit badge va Manage app tugmalarini yashirish */
+
+          /* Fork, Streamlit badge va Manage app tugmalarini yashirish */
     [data-testid="stDecoration"] {display: none !important;}
     .viewerBadge_container__1QSob {display: none !important;}
     #streamlit-statusBar {display: none !important;}
