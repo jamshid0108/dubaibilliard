@@ -14,6 +14,12 @@ st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="w
 # --- CSS: DIZAYN VA TUGMALAR UCHUN ---
 st.markdown("""
     <style>
+      /* Faqat Fork va Streamlit badge tugmalarini yashirish, menyuni qoldirish */
+    .stAppToolbar {display: none !important;}
+    [data-testid="stDecoration"] {display: none !important;}
+    .viewerBadge_container__1QSob {display: none !important;}
+    #streamlit-statusBar {display: none !important;}
+  
    .stApp {
         background-image: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), 
                           url("https://images.unsplash.com/photo-1511193311914-0346f16efe90?q=80&w=1920");
