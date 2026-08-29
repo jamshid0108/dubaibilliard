@@ -11,7 +11,7 @@ BAR_FILE = "bar_stock.json"
 
 st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="wide")
 
-# --- CSS: DIZAYN VA ORTIQCHA TUGMALARNI YASHIRISH ---
+# --- CSS: DIZAYN (SIDEBAR OCHIQ HOLATDA) ---
 st.markdown("""
 <style>
 /* Yuqoridagi va pastdagi ortiqcha Streamlit/GitHub tugmalarini yashirish */
@@ -31,7 +31,7 @@ footer {visibility: hidden;}
     background-attachment: fixed;
 }
 [data-testid="stSidebar"] {
-    background-color: rgba(18, 18, 18, 0.82) !important;
+    background-color: rgba(18, 18, 18, 0.92) !important;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 h1, h2, h3, h4, p, span, label {
@@ -235,7 +235,6 @@ else:
             
             st.success(f"🧾 **OXIRGI TO'LOV CHEKI:** {t_num}-Stol | Vaqt: {rec['minutes']} daq ({rec['time_cost']:,} so'm){bar_items_text} | **JAMI: {rec['total_cost']:,} so'm**")
             
-            # Stol ochilgan vaqtdan boshlab 6 daqiqa o'tganini tekshirish
             now = get_local_time()
             time_since_start = (now - rec['start_time']).total_seconds() / 60
             can_cancel = time_since_start <= 6
