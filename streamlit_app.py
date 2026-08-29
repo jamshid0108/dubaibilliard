@@ -11,87 +11,64 @@ BAR_FILE = "bar_stock.json"
 
 st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="wide")
 
-# --- CSS: DIZAYN VA TUGMALAR UCHUN ---
+# --- CSS: DIZAYN VA ORTIQCHA TUGMALARNI YASHIRISH ---
 st.markdown("""
 <style>
-    /* Streamlitning menyu ochish tugmasini topish */
-    [data-testid="stSidebarNav"] {
-        /* Agar sidebar elementlari bo'lsa */
-    }
+/* Yuqoridagi va pastdagi ortiqcha Streamlit/GitHub tugmalarini yashirish */
+#MainMenu {visibility: hidden;}
+header {visibility: hidden;}
+.stAppToolbar {display: none !important;}
+[data-testid="stDecoration"] {display: none;}
+footer {visibility: hidden;}
+.viewerBadge_container__1QSob {display: none !important;}
+#streamlit-statusBar {display: none !important;}
 
-    /* Chap yuqoridagi menyuni ochuvchi strelka tugma */
-    button[kind="header"] {
-        background-color: #ff4b4b !important; /* Hajmini Kattalashtirish */
-        color: white !important;
-        border-radius: 10px !important;
-        transform: scale(1.3);
-        margin-left: 5px;
-    }
+.stApp {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), 
+                      url("https://images.unsplash.com/photo-1511193311914-0346f16efe90?q=80&w=1920");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+[data-testid="stSidebar"] {
+    background-color: rgba(18, 18, 18, 0.82) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+h1, h2, h3, h4, p, span, label {
+    color: #ffffff !important;
+}
+[data-testid="stSidebar"] h1 {
+    font-size: 30px !important;
+    font-weight: 800 !important;
+}
+[data-testid="stSidebar"] p, [data-testid="stSidebar"] label {
+    font-size: 20px !important;
+    font-weight: bold !important;
+}
+[data-testid="stSidebar"] .stButton button {
+    font-size: 13px !important;
+    padding: 5px 10px !important;
+    border-radius: 6px !important;
+}
+.stButton button { font-size: 17px !important; border-radius: 8px !important; }
 
-    /* Mobil versiyada yanada yaxshi ko'rinishi uchun */
-    header [data-testid="baseButton-header"] {
-        background-color: #0084ff;
-        border-radius: 8px;
-        padding: 4px;
-    }
+div.stSuccess {
+    background-color: #0d5c2e !important;
+    border: 2px solid #00ff66 !important;
+    opacity: 1 !important;
+    border-radius: 10px;
+    padding: 15px;
+}
+div.stSuccess * {
+    color: #ffffff !important;
+    font-size: 17px !important;
+}
+[data-testid="stVerticalBlock"] > div {
+    background-color: rgba(40, 40, 40, 0.5) !important;
+    border-radius: 12px;
+    padding: 10px;
+}
 </style>
-""", unsafe_allow_html=True)
-st.markdown("""<style>
-
-
-      /* Fork, Streamlit badge va Manage app tugmalarini yashirish */
-    [data-testid="stDecoration"] {display: none !important;}
-    .viewerBadge_container__1QSob {display: none !important;}
-    #streamlit-statusBar {display: none !important;}
-    [data-testid="manage-app-button"] {display: none !important;}
-
-  
-   .stApp {
-        background-image: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), 
-                          url("https://images.unsplash.com/photo-1511193311914-0346f16efe90?q=80&w=1920");
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-    }
-    [data-testid="stSidebar"] {
-        background-color: rgba(18, 18, 18, 0.82) !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    h1, h2, h3, h4, p, span, label {
-        color: #ffffff !important;
-    }
-    [data-testid="stSidebar"] h1 {
-        font-size: 30px !important;
-        font-weight: 800 !important;
-    }
-    [data-testid="stSidebar"] p, [data-testid="stSidebar"] label {
-        font-size: 20px !important;
-        font-weight: bold !important;
-    }
-    [data-testid="stSidebar"] .stButton button {
-        font-size: 13px !important;
-        padding: 5px 10px !important;
-        border-radius: 6px !important;
-    }
-    .stButton button { font-size: 17px !important; border-radius: 8px !important; }
-    
-    div.stSuccess {
-        background-color: #0d5c2e !important;
-        border: 2px solid #00ff66 !important;
-        opacity: 1 !important;
-        border-radius: 10px;
-        padding: 15px;
-    }
-    div.stSuccess * {
-        color: #ffffff !important;
-        font-size: 17px !important;
-    }
-    [data-testid="stVerticalBlock"] > div {
-        background-color: rgba(40, 40, 40, 0.5) !important;
-        border-radius: 12px;
-        padding: 10px;
-    }
-    </style>
 """, unsafe_allow_html=True)
 
 def get_local_time():
@@ -162,6 +139,26 @@ def load_bar_stock():
             "price": 20000, "unit": "dona", "sold": 0,
             "batches": [{"date": today_str, "qty": 6}]
         },
+        "Fanta 1.5l": {
+            "price": 20000, "unit": "dona", "sold": 0,
+            "batches": []
+        },
+        "Fanta 1l": {
+            "price": 15000, "unit": "dona", "sold": 0,
+            "batches": []
+        },
+        "Garella": {
+            "price": 15000, "unit": "dona", "sold": 0,
+            "batches": []
+        },
+        "Toshkent suv": {
+            "price": 7000, "unit": "dona", "sold": 0,
+            "batches": []
+        },
+        "Coca-Cola 1l": {
+            "price": 15000, "unit": "dona", "sold": 0,
+            "batches": []
+        },
         "Parlament": {
             "price": 27000, "unit": "pachka", "sold": 0, "note": "dona 2000 som",
             "batches": [{"date": today_str, "qty": 2}]
@@ -175,7 +172,6 @@ def load_bar_stock():
         try:
             with open(BAR_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                # Eski formatni yangi partiyali formatga moslashtirish uchun tekshiruv
                 for k, v in data.items():
                     if "batches" not in v:
                         initial_val = v.get("initial", 0)
@@ -239,7 +235,17 @@ else:
             
             st.success(f"🧾 **OXIRGI TO'LOV CHEKI:** {t_num}-Stol | Vaqt: {rec['minutes']} daq ({rec['time_cost']:,} so'm){bar_items_text} | **JAMI: {rec['total_cost']:,} so'm**")
             
-            col_btn1, col_btn2, col_btn3 = st.columns(3)
+            # Stol ochilgan vaqtdan boshlab 6 daqiqa o'tganini tekshirish
+            now = get_local_time()
+            time_since_start = (now - rec['start_time']).total_seconds() / 60
+            can_cancel = time_since_start <= 6
+            
+            if can_cancel:
+                col_btn1, col_btn2, col_btn3 = st.columns(3)
+            else:
+                col_btn1, col_btn2 = st.columns(2)
+                col_btn3 = None
+                
             with col_btn1:
                 if st.button("Yopish", use_container_width=True):
                     history = load_history()
@@ -264,11 +270,11 @@ else:
                     
                     st.session_state.last_receipt = None
                     st.rerun()
+                    
             with col_btn2:
                 if st.button("▶️ Davom ettirish", use_container_width=True):
                     table = st.session_state.tables[str(t_num)]
                     if table['last_stopped_time']:
-                        now = get_local_time()
                         paused_duration = now - table['last_stopped_time']
                         table['start_time'] = table['start_time'] + paused_duration
                     
@@ -277,17 +283,19 @@ else:
                     save_tables_state(st.session_state.tables)
                     st.session_state.last_receipt = None
                     st.rerun()
-            with col_btn3:
-                if st.button("❌ Rad qilish", use_container_width=True):
-                    bar = load_bar_stock()
-                    for b_item in rec['bar_items']:
-                        if b_item['name'] in bar:
-                            bar[b_item['name']]['sold'] -= b_item['qty']
-                    save_bar_stock(bar)
-                    st.session_state.bar_stock = bar
                     
-                    st.session_state.last_receipt = None
-                    st.rerun()
+            if can_cancel and col_btn3:
+                with col_btn3:
+                    if st.button("❌ Rad qilish", use_container_width=True):
+                        bar = load_bar_stock()
+                        for b_item in rec['bar_items']:
+                            if b_item['name'] in bar:
+                                bar[b_item['name']]['sold'] -= b_item['qty']
+                        save_bar_stock(bar)
+                        st.session_state.bar_stock = bar
+                        
+                        st.session_state.last_receipt = None
+                        st.rerun()
             st.write("---")
 
         cols = st.columns(2)
@@ -360,7 +368,8 @@ else:
                             "bar_items": table.get('cart', []),
                             "total_cost": total_cost,
                             "start_str": table['start_time'].strftime('%H:%M'),
-                            "end_str": end_time.strftime('%H:%M')
+                            "end_str": end_time.strftime('%H:%M'),
+                            "start_time": table['start_time']
                         }
                         
                         table['active'] = False
@@ -412,14 +421,16 @@ else:
             st.write(f"💰 Narxi: **{data['price']:,} so'm** ({data.get('note', data['unit'])})")
             st.write(f"✅ Qolgani: **{remaining} {data['unit']}** (Jami olib kelingan: {total_initial}, Sotilgan: {data['sold']})")
             
-            # Partiyalar tarixini ko'rsatish
             with st.expander(f"📅 Kelish partiyalari tarixi ({item_name})"):
-                for b in data['batches']:
-                    st.write(f"- Kelgan sanasi: **{b['date']}** | Miqdori: **{b['qty']} {data['unit']}**")
+                if data['batches']:
+                    for b in data['batches']:
+                        st.write(f"- Kelgan sanasi: **{b['date']}** | Miqdori: **{b['qty']} {data['unit']}**")
+                else:
+                    st.write("Hali partiya qo'shilmagan (jami olib kelingan: 0)")
             
             col_s1, col_s2, col_s3 = st.columns([2, 1, 1])
             with col_s1:
-                new_sold = st.number_input(f"Sotilgan sonini kiritish ({item_name})", min_value=0, max_value=total_initial, value=data['sold'], key=f"sold_{item_name}")
+                new_sold = st.number_input(f"Sotilgan sonini kiritish ({item_name})", min_value=0, max_value=max(total_initial, 0), value=data['sold'], key=f"sold_{item_name}")
             with col_s2:
                 if st.button(f"Yangilash", key=f"btn_upd_{item_name}"):
                     diff = new_sold - data['sold']
@@ -442,7 +453,6 @@ else:
                     st.success("Muvaffaqiyatli saqlandi va kassaga qo'shildi!")
                     st.rerun()
             with col_s3:
-                # Yangi partiya qo'shish uchun tugma va miqdor
                 add_qty = st.number_input(f"Qo'shish miqdori", min_value=1, value=1, key=f"add_qty_{item_name}")
                 if st.button(f"➕ Yangi partiya qo'shish", key=f"btn_add_{item_name}"):
                     today_str = get_local_time().strftime("%Y-%m-%d")
