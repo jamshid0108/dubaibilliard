@@ -9,9 +9,14 @@ DATA_FILE = "billiard_history.json"
 STATE_FILE = "tables_state.json"
 BAR_FILE = "bar_stock.json"
 
-st.set_page_config(page_title="Dubai Billiard Club", page_icon="🎱", layout="wide")
+st.set_page_config(
+    page_title="Dubai Billiard Club", 
+    page_icon="🎱", 
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# --- CSS: DIZAYN (SIDEBAR OCHIQ HOLATDA) ---
+# --- CSS: DIZAYN VA SIDEBAR'NI MAJBURIY OCHIQ QILISH ---
 st.markdown("""
 <style>
 /* Yuqoridagi va pastdagi ortiqcha Streamlit/GitHub tugmalarini yashirish */
@@ -30,19 +35,23 @@ footer {visibility: hidden;}
     background-position: center;
     background-attachment: fixed;
 }
+
+/* Sidebar telefonlarda ham ochiq turishi uchun */
 [data-testid="stSidebar"] {
-    background-color: rgba(18, 18, 18, 0.92) !important;
+    background-color: rgba(18, 18, 18, 0.98) !important;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 240px !important;
 }
+
 h1, h2, h3, h4, p, span, label {
     color: #ffffff !important;
 }
 [data-testid="stSidebar"] h1 {
-    font-size: 30px !important;
+    font-size: 26px !important;
     font-weight: 800 !important;
 }
 [data-testid="stSidebar"] p, [data-testid="stSidebar"] label {
-    font-size: 20px !important;
+    font-size: 18px !important;
     font-weight: bold !important;
 }
 [data-testid="stSidebar"] .stButton button {
