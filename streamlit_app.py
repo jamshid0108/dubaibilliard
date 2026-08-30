@@ -19,14 +19,6 @@ st.set_page_config(
 # --- CSS: DIZAYN VA SIDEBAR'NI MAJBURIY OCHIQ QILISH ---
 st.markdown("""
 <style>
-/* Yuqoridagi va pastdagi ortiqcha Streamlit/GitHub tugmalarini yashirish */
-#MainMenu {visibility: hidden;}
-header {visibility: hidden;}
-.stAppToolbar {display: none !important;}
-[data-testid="stDecoration"] {display: none;}
-footer {visibility: hidden;}
-.viewerBadge_container__1QSob {display: none !important;}
-#streamlit-statusBar {display: none !important;}
 
 .stApp {
     background-image: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), 
